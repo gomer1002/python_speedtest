@@ -1,0 +1,5 @@
+{
+  "python.terminal.activateEnvInCurrentTerminal": true,
+  "python.defaultInterpreterPath": "E:/_env/env_web/Scripts/python.exe",
+  "cSpell.enabled": false,
+}
