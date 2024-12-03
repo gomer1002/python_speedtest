@@ -36,71 +36,93 @@
       <button onclick="runUploadTest()">Test Upload Speed</button>
     </p>
 
-    <div id="results"></div>
+    <div id="resultsDownload"></div>
+    <div id="resultsUpload"></div>
     <script>
       const serverUrl = window.location.origin;
+      let downloadTestStarted = false;
+      let uploadTestStarted = false;
 
       async function runDownloadTest() {
-        document.getElementById("results").innerText = `Testing . . .`;
-        const packetCount = parseInt(
-          document.getElementById("packetCount").value
-        );
-        const packetSize = parseInt(
-          document.getElementById("packetSize").value
-        );
-        let totalBytesDownloaded = 0;
-        let avg = 0.0;
-
-        for (let i = 0; i < packetCount; i++) {
-          let startTime = performance.now();
-          let response = await fetch(
-            `${serverUrl}/generate-data?size_in_mb=${packetSize}`
+        if (!downloadTestStarted) {
+          document.getElementById(
+            "resultsDownload"
+          ).innerText = `Testing . . .`;
+          const packetCount = parseInt(
+            document.getElementById("packetCount").value
           );
-          await response.blob();
-          let endTime = performance.now();
-          let duration = (endTime - startTime) / 1000;
-          let speedMbps = (packetSize / duration) * 8;
-          avg = avg + speedMbps;
-          document.getElementById("results").innerText = `Download Speed ${
-            i + 1
-          }/${packetCount}: ${speedMbps.toFixed(2)} Mbps`;
+          const packetSize = parseInt(
+            document.getElementById("packetSize").value
+          );
+          let totalBytesDownloaded = 0;
+          let avg = 0.0;
+          downloadTestStarted = true;
+          for (let i = 0; i < packetCount; i++) {
+            if (!downloadTestStarted) return;
+            let startTime = performance.now();
+            let response = await fetch(
+              `${serverUrl}/generate-data?size_in_mb=${packetSize}`
+            );
+            await response.blob();
+            let endTime = performance.now();
+            let duration = (endTime - startTime) / 1000;
+            let speedMbps = (packetSize / duration) * 8;
+            avg = avg + speedMbps;
+            document.getElementById(
+              "resultsDownload"
+            ).innerText = `Download Speed ${
+              i + 1
+            }/${packetCount}: ${speedMbps.toFixed(2)} Mbps`;
+          }
+          avg = avg / packetCount;
+          document.getElementById(
+            "resultsDownload"
+          ).innerText = `Download Speed AVG: ${avg.toFixed(2)} Mbps`;
+          downloadTestStarted = false;
+        } else {
+          downloadTestStarted = false;
         }
-        avg = avg / packetCount;
-        document.getElementById(
-          "results"
-        ).innerText = `Download Speed AVG: ${avg.toFixed(2)} Mbps`;
       }
 
       async function runUploadTest() {
-        document.getElementById("results").innerText = `Testing . . .`;
-        const packetCount = parseInt(
-          document.getElementById("packetCount").value
-        );
-        const packetSize = parseInt(
-          document.getElementById("packetSize").value
-        );
-        const data = new Blob(["0".repeat(packetSize * 1024 * 1024)]);
-        let totalBytesDownloaded = 0;
-        let avg = 0.0;
-
-        for (let i = 0; i < packetCount; i++) {
-          let startTime = performance.now();
-          let response = await fetch(`${serverUrl}/upload-data`, {
-            method: "POST",
-            body: data,
-          });
-          let endTime = performance.now();
-          let duration = (endTime - startTime) / 1000;
-          let speedMbps = (packetSize / duration) * 8;
-          avg = avg + speedMbps;
-          document.getElementById("results").innerText = `Upload Speed ${
-            i + 1
-          }/${packetCount}: ${speedMbps.toFixed(2)} Mbps`;
+        if (!uploadTestStarted) {
+          document.getElementById("resultsUpload").innerText = `Testing . . .`;
+          const packetCount = parseInt(
+            document.getElementById("packetCount").value
+          );
+          const packetSize = parseInt(
+            document.getElementById("packetSize").value
+          );
+          const data = new Blob(["0".repeat(packetSize * 1024 * 1024)]);
+          let totalBytesDownloaded = 0;
+          let avg = 0.0;
+          uploadTestStarted = true;
+          for (let i = 0; i < packetCount; i++) {
+            if (!uploadTestStarted) return;
+            let startTime = performance.now();
+            let response = await fetch(`${serverUrl}/upload-data`, {
+              method: "POST",
+              body: data,
+            });
+            console.log(response.upload_time);
+            let endTime = performance.now();
+            let duration = (endTime - startTime) / 1000;
+            let speedMbps = (packetSize / duration) * 8;
+            avg = avg + speedMbps;
+            document.getElementById(
+              "resultsUpload"
+            ).innerText = `Upload Speed ${
+              i + 1
+            }/${packetCount}: ${speedMbps.toFixed(2)} Mbps`;
+          }
+          avg = avg / packetCount;
+          document.getElementById(
+            "resultsUpload"
+          ).innerText = `Upload Speed AVG: ${avg.toFixed(2)} Mbps`;
+          uploadTestStarted = false;
+        } else {
+          uploadTestStarted = false;
         }
-        avg = avg / packetCount;
-        document.getElementById(
-          "results"
-        ).innerText = `Upload Speed AVG: ${avg.toFixed(2)} Mbps`;
       }
     </script>
   </body>

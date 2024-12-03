@@ -1,7 +1,8 @@
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse, FileResponse
 from fastapi import Request
-import time
+
+from time import perf_counter as clock
 
 app = FastAPI()
 
@@ -19,10 +20,10 @@ async def generate_data(size_in_mb: int = 10):
 
 @app.post("/upload-data")
 async def upload_data(request: Request):
-    start_time = time.time()
+    start_time = -clock()
     await request.body()
-    elapsed_time = time.time() - start_time
-    return {"upload_time": elapsed_time}
+    start_time += clock()
+    return {"upload_time": start_time}
 
 
 if __name__ == "__main__":
