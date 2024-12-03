@@ -32,12 +32,17 @@
       <input type="number" id="packetCount" value="100" min="1" step="1" />
     </p>
     <p>
-      <button onclick="runDownloadTest()">Test Download Speed</button>
-      <button onclick="runUploadTest()">Test Upload Speed</button>
+      <button id="downloadBtn" onclick="runDownloadTest()">
+        Test Download Speed
+      </button>
+      <button id="uploadBtn" onclick="runUploadTest()">
+        Test Upload Speed
+      </button>
     </p>
 
     <div id="resultsDownload"></div>
     <div id="resultsUpload"></div>
+
     <script>
       const serverUrl = window.location.origin;
       let downloadTestStarted = false;
@@ -48,6 +53,9 @@
           document.getElementById(
             "resultsDownload"
           ).innerText = `Testing . . .`;
+          document.getElementById(
+            "downloadBtn"
+          ).innerText = `Testing Download Speed . . .`;
           const packetCount = parseInt(
             document.getElementById("packetCount").value
           );
@@ -78,8 +86,14 @@
           document.getElementById(
             "resultsDownload"
           ).innerText = `Download Speed AVG: ${avg.toFixed(2)} Mbps`;
+          document.getElementById(
+            "downloadBtn"
+          ).innerText = `Test Download Speed`;
           downloadTestStarted = false;
         } else {
+          document.getElementById(
+            "downloadBtn"
+          ).innerText = `Test Download Speed`;
           downloadTestStarted = false;
         }
       }
@@ -87,6 +101,9 @@
       async function runUploadTest() {
         if (!uploadTestStarted) {
           document.getElementById("resultsUpload").innerText = `Testing . . .`;
+          document.getElementById(
+            "uploadBtn"
+          ).innerText = `Testing Upload Speed . . .`;
           const packetCount = parseInt(
             document.getElementById("packetCount").value
           );
@@ -98,29 +115,35 @@
           let avg = 0.0;
           uploadTestStarted = true;
           for (let i = 0; i < packetCount; i++) {
-            if (!uploadTestStarted) return;
-            let startTime = performance.now();
-            let response = await fetch(`${serverUrl}/upload-data`, {
-              method: "POST",
-              body: data,
-            });
-            console.log(response.upload_time);
-            let endTime = performance.now();
-            let duration = (endTime - startTime) / 1000;
-            let speedMbps = (packetSize / duration) * 8;
-            avg = avg + speedMbps;
-            document.getElementById(
-              "resultsUpload"
-            ).innerText = `Upload Speed ${
-              i + 1
-            }/${packetCount}: ${speedMbps.toFixed(2)} Mbps`;
+            try {
+              if (!uploadTestStarted) return;
+              let startTime = performance.now();
+              let response = await fetch(`${serverUrl}/upload-data`, {
+                method: "POST",
+                body: data,
+              });
+              console.log(response.upload_time);
+              let endTime = performance.now();
+              let duration = (endTime - startTime) / 1000;
+              let speedMbps = (packetSize / duration) * 8;
+              avg = avg + speedMbps;
+              document.getElementById(
+                "resultsUpload"
+              ).innerText = `Upload Speed ${
+                i + 1
+              }/${packetCount}: ${speedMbps.toFixed(2)} Mbps`;
+            } catch (error) {
+              console.error(error);
+            }
           }
           avg = avg / packetCount;
           document.getElementById(
             "resultsUpload"
           ).innerText = `Upload Speed AVG: ${avg.toFixed(2)} Mbps`;
+          document.getElementById("uploadBtn").innerText = `Test Upload Speed`;
           uploadTestStarted = false;
         } else {
+          document.getElementById("uploadBtn").innerText = `Test Upload Speed`;
           uploadTestStarted = false;
         }
       }
